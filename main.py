@@ -5,29 +5,42 @@ logging.basicConfig(level=logging.INFO, format='%(message)s', filename='MainLog.
 
 
 def pick_resize(new_size, path, new_path):
-    logging.info(f"Обработка датасета '{path}'")
-    logging.info("---------------------------------------")
-    files = os.listdir(path)
+    folders = os.listdir(path)
+    for f in folders:
+        try:
+            os.makedirs(new_path+"/"+f)
+        except Exception:
+            print("Папка уже существует.")
     errors = 0
-    for img in files:
-        try:
-            image = cv2.imread(path+img)
-        except:
-            logging.error("ОШИБКА в открытии фото")
-            errors += 1
-            continue
-        try:
-            resized_img = cv2.resize(image, new_size)
-        except:
-            logging.error("ОШИБКА в изменении размера фото.")
-            errors += 1
-            continue
-        try:
-            cv2.imwrite(new_path+img, resized_img)
-        except:
-            logging.error("ОШИБКА в сохранении фото.")
-            errors += 1
-            continue
-    logging.info(f"\nОбработано {len(files)} файлов:")
-    logging.info(f"{errors} битых файлов.")
-    logging.info("---------------------------------------\n\n")
+    logging.info(f"Обработка датасета '{path}'\n")
+    
+    for folder in folders:
+        images = os.listdir(path+"/"+folder)
+        cnt = 0
+        logging.info("---------------------------------------")
+        for img in images:
+            cnt += 1
+            try:
+                pick = cv2.imread(path+"/"+folder+"/"+img)
+            except:
+                logging.error("ОШИБКА в открытии фото:" + folder +"/"+  img)
+                errors += 1
+                continue
+            try:
+                resized_img = cv2.resize(pick, new_size)
+            except:
+                logging.error("ОШИБКА в изменении размера фото: " + folder +"/"+ img)
+                errors += 1
+                continue
+            try:
+                cv2.imwrite(new_path+"/"+folder+"/"+img, resized_img)
+            except:
+                logging.error("ОШИБКА в сохранении фото: " + folder +"/"+  img)
+                errors += 1
+                continue
+        logging.info(f"\nОбработано {cnt} файлов:")
+        logging.info(f"{errors} битых файлов.")
+        logging.info("---------------------------------------\n\n")
+    
+if __name__=="__main__":
+    pick_resize((32, 32), "data", "new_data")
